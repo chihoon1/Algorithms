@@ -8,7 +8,7 @@ import numpy as np
 
 def mod_hash_func(*args, **kwargs):
     # return a hashed value of integer arguments(args)
-    hash_table_size = kwargs.get('hash_table_size', 19)
+    hash_table_size = kwargs.get('hash_table_size', 19)  # hash function is based on mod of this
     return int(np.prod(args)) % hash_table_size
 
 def PCY(basket_collection, candidate_pairs, **kwargs):
@@ -23,7 +23,7 @@ def PCY(basket_collection, candidate_pairs, **kwargs):
     # PCY counting for the first pass
     r_minus_one_counts = {}  # count occurences of a candiate pair in the basket_collection. key: pair, val: counts
     pair_counts = {}  # dictionary. Key: pair(tuple). Value: hashed value
-    hash_table_arr = [0] * hash_table_size  # hash function is based on mod hash_table_size
+    hash_table_arr = [0] * hash_table_size  # frequent bucket
     for basket in basket_collection:
         # counting the occurence of one item
         candidate_pairs_in_basket = []
@@ -34,7 +34,6 @@ def PCY(basket_collection, candidate_pairs, **kwargs):
                 candidate_pairs_in_basket.append(item)  # this candidate pair exists in the basket
         # counting pairs in the hashed bucket
         all_pairs_in_a_basket = get_bigger_pairs(basket, candidate_pairs_in_basket)
-        #all_pairs_in_a_basket = combinations(basket, r)  # elems in a combination in ascending order
         for pair in all_pairs_in_a_basket:
             hashed_val = hash_func(pair, hash_table_size=hash_table_size)
             if pair_counts.get(hashed_val) is not None:
@@ -42,18 +41,13 @@ def PCY(basket_collection, candidate_pairs, **kwargs):
             else:
                 pair_counts[hashed_val] = {pair}
             hash_table_arr[hashed_val] += 1
-    #print(pair_counts)
     new_candidate_pairs = set()
     for i in range(len(hash_table_arr)):  # convert hash table to a bit vector where elem = 1 when count >= support
-        #hash_table_arr[i] = 1 if hash_table_arr[i] >= support_threshold else 0
         if hash_table_arr[i] >= support_threshold:  # condition 1: pair mapped to the frequent bucket
-            for pair in pair_counts[hash_table_arr[i]]:
+            for pair in pair_counts[i]:
                 sub_pairs = combinations(pair, r-1)
                 for sub_pair in sub_pairs:  # condition 2: each sub_pair in pair is frequent
-                    #print(f"sub_pair: {sub_pair}, count: {r_minus_one_counts[sub_pair]}")
-                    if r_minus_one_counts[sub_pair] < support_threshold:
-                        print("break")
-                        break  # a sub_pair not frequent
+                    if r_minus_one_counts[sub_pair] < support_threshold: break  # a sub_pair not frequent
                 else:  # condition 1 and 2 met
                     new_candidate_pairs.add(tuple(sorted(pair)))
     return list(new_candidate_pairs)
@@ -75,6 +69,21 @@ def get_bigger_pairs(basket, candidate_pairs_in_basket):
     return new_pairs
 
 
+def count_pairs_occurrences(pairs, basket_collection):
+    # count occurrences of a pair in pairs list in the basket_collection
+    # param: basket_collection(2D array) where outer array represent a basekt
+    #               and elem in inner array must be an integer representing an item
+    # param: pairs(list of tuples) to be counted for their occurrences
+    # return a dictionary where key=pair, val=count(occurrence)
+    counts = {}
+    for basket in basket_collection:
+        for pair in pairs:
+            if set(pair).issubset(set(basket)):
+                if counts.get(pair): counts[pair] += 1
+                else: counts[pair] = 1
+    return counts
+
+
 if __name__ == '__main__':
     basket_collection = [[1, 2, 3],
                          [2, 3, 6],
@@ -93,5 +102,7 @@ if __name__ == '__main__':
     for basket in basket_collection:  # create a set containing all the unique items
         for item in basket:
             items_set.add((item,))
-    res = PCY(basket_collection, items_set)
-    print(f"pairs to be considered in the next pass:\n{res}")
+    pairs = PCY(basket_collection, items_set)
+    print(f"pairs to be considered in the next pass:\n{pairs}")
+    counts = count_pairs_occurrences(pairs, basket_collection)
+    print(f"occurences of pairs: {counts}")
