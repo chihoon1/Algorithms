@@ -3,7 +3,7 @@ Implementation of K-means clustering algorithm (Unsupervised Learning)
 '''
 
 import numpy as np
-
+from plotting import plot2D_clustering
 
 
 def k_means_clustering(D, centroid_list, **kwargs):
@@ -82,7 +82,7 @@ if __name__ == '__main__':
         print(f"Cluster {i + 1}'s centroid: {centroid_list[i]}")
     print(f"SSE of clusters: {SSE}")
     print(f"Converged in {iteration}-th iteration")
-    
+
     # test with different centroids
     centroid1 = (D[0, :] + D[1, :] + D[2, :] + np.array([2, 2])) / 4  # imaginary vertex (2,2)
     centroid2 = (D[3, :] + D[4, :]) / 2
@@ -96,3 +96,11 @@ if __name__ == '__main__':
         print(f"Cluster {i + 1}'s centroid: {centroid_list[i]}")
     print(f"SSE of clusters: {SSE}")
     print(f"Converged in {iteration}-th iteration")
+    print(clusters_list)
+
+    # make cluster labels for data points
+    cluster_labels = np.zeros(len(D))
+    for i in range(len(clusters_list)):
+        for data_point in clusters_list[i]:
+            cluster_labels[data_point] = i
+    plot2D_clustering(D, cluster_labels)
