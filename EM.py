@@ -3,7 +3,7 @@ Implementation of EM(Expectation-Maximization) clustering algorithm (Unsupervise
 '''
 import numpy as np
 from scipy.stats import multivariate_normal
-from plotting import plot2D_clustering
+from plotting import plot_clustering
 
 def EM_train(D, clusters_mean_list, clusters_covmat_list, prior_prob_list, **kwargs):
     '''
@@ -116,4 +116,21 @@ if __name__ == '__main__':
     clusters_mu, clusters_covm, clusters_prior_pr, SSE = EM_train(D, mu_list, covmat_list, prior_probabilities, epsilon=eps)
     # clustering
     cluster_labels = EM_clustering(D, clusters_mu, clusters_covm, clusters_prior_pr)
-    plot2D_clustering(D, cluster_labels)
+    plot_clustering(D, cluster_labels)
+
+    # 3D data
+    D = np.random.normal(size=(9,3)) * 4
+    # Parameters initialization
+    k = 2
+    mu_list = [np.random.normal(size=3) * 4, np.random.normal(size=3) * 4]
+    covmat_list = []
+    for i in range(2):
+        covmat_list.append(np.identity(D.shape[1]))
+    prior_probabilities = [1 / 3, 1 / 3]
+    eps = 0.001
+    # EM steps
+    clusters_mu, clusters_covm, clusters_prior_pr, SSE = EM_train(D, mu_list, covmat_list, prior_probabilities,
+                                                                  epsilon=eps)
+    # clustering
+    cluster_labels = EM_clustering(D, clusters_mu, clusters_covm, clusters_prior_pr)
+    plot_clustering(D, cluster_labels)
