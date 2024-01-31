@@ -4,3 +4,6 @@
 [submodule "supervised_learning"]
 	path = supervised_learning
 	url = git@github.com:chihoon1/supervised_learning.git
+[submodule "unsupervised_learning"]
+	path = unsupervised_learning
+	url = git@github.com:chihoon1/unsupervised_learning.git
